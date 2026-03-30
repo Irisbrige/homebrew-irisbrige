@@ -1,4 +1,4 @@
-class ScollCode < Formula
+class scollcode < Formula
     desc "Local macOS relay for iOS and Codex App Server RPC"
     homepage "https://github.com/ScollCode/homebrew-scollcode"
     version "0.2.0"
