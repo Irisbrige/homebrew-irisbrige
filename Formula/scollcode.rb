@@ -16,19 +16,19 @@ class Scollcode < Formula
     end
 
     def install
-      bin.install "ScollCode" => "ScollCode"
+      bin.install "scollcode" => "scollcode"
     end
 
     def caveats
       <<~EOS
         The executable is installed as:
-          ScollCode
+          scollcode
 
         Default runtime expects the `codex` CLI to be available on PATH.
       EOS
     end
 
     test do
-      assert_predicate bin/"ScollCode", :exist?
+      assert_predicate bin/"scollcode", :exist?
     end
   end
