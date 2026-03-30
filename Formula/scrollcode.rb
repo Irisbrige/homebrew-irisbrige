@@ -1,4 +1,4 @@
-class ScrollcodeRelay < Formula
+class Scrollcode < Formula
     desc "Local macOS relay for iOS and Codex App Server RPC"
     homepage "https://github.com/ScrollCode-App/homebrew-scrollcode"
     version "0.1.1"
