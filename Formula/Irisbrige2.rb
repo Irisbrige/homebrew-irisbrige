@@ -1,7 +1,7 @@
 class Irisbrige < Formula
     desc "Local macOS relay for iOS and Codex App Server RPC"
     homepage "https://github.com/Irisbrige/homebrew-irisbrige"
-    version "0.2.0"
+    version "0.3.0"
 
     on_macos do
       on_arm do
