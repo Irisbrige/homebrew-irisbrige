@@ -4,12 +4,22 @@
 
 `homebrew-irisbrige` provides installation and deployment entry points for `irisbrige-edge` across supported platforms.
 
+## Contents
+
+- [Platform Guide](#platform-guide)
+- [macOS](#macos)
+- [Linux](#linux)
+- [Windows](#windows)
+- [Repository Contents](#repository-contents)
+
+<a id="platform-guide"></a>
 ## Platform Guide
 
 - `macOS`: install and manage the service with Homebrew.
 - `Linux`: deploy with the included script or manually, then manage with `systemd`.
 - `Windows`: deploy with the included PowerShell installer or manually with WinSW.
 
+<a id="macos"></a>
 ## macOS
 
 Supports both Apple Silicon and Intel Macs.
@@ -50,6 +60,7 @@ Notes:
 - The service runs `irisbrige-edge server`
 - The runtime expects the `codex` CLI to be available on `PATH`
 
+<a id="linux"></a>
 ## Linux
 
 Linux deployment is documented separately. The Linux guide includes:
@@ -61,6 +72,7 @@ See:
 
 - [Linux Deployment Guide](./linux.md)
 
+<a id="windows"></a>
 ## Windows
 
 Windows deployment is documented separately. The Windows guide includes:
@@ -72,6 +84,7 @@ See:
 
 - [Windows Deployment Guide](./windows.md)
 
+<a id="repository-contents"></a>
 ## Repository Contents
 
 - [Formula/irisbrige.rb](./Formula/irisbrige.rb): Homebrew formula for macOS

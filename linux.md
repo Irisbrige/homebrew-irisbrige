@@ -9,6 +9,32 @@ It covers two approaches:
 1. Deploy automatically with the repository shell script.
 2. Deploy manually without using the script.
 
+## Contents
+
+- [Prerequisites](#prerequisites)
+- [Option 1: Deploy with the Script](#option-1)
+- [Run the installer directly](#run-installer-directly)
+- [Default install locations](#default-install-locations)
+- [Default service user](#default-service-user)
+- [Common override variables](#common-override-variables)
+- [Additional environment variables](#additional-environment-variables)
+- [Status and logs](#status-and-logs)
+- [Common management commands](#common-management-commands)
+- [Uninstall with the script](#uninstall-with-the-script)
+- [Option 2: Manual Deployment](#option-2)
+- [Detect the architecture](#detect-the-architecture)
+- [Resolve the latest release tag](#resolve-the-latest-release-tag)
+- [Build the download URL](#build-the-download-url)
+- [Download and extract](#download-and-extract)
+- [Install the binary](#install-the-binary)
+- [Choose the service user](#choose-the-service-user)
+- [Create the systemd service](#create-the-systemd-service)
+- [Reload systemd and start the service](#reload-systemd-and-start-the-service)
+- [Verify the service](#verify-the-service)
+- [Clean up temporary files](#clean-up-temporary-files)
+- [Troubleshooting](#troubleshooting)
+
+<a id="prerequisites"></a>
 ## Prerequisites
 
 - A Linux system.
@@ -16,6 +42,7 @@ It covers two approaches:
 - `curl`, `tar`, and `systemctl` are installed.
 - You have `root` or `sudo` privileges.
 
+<a id="option-1"></a>
 ## Option 1: Deploy with the Script
 
 Script URL:
@@ -24,6 +51,7 @@ Script URL:
 https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh
 ```
 
+<a id="run-installer-directly"></a>
 ### 1. Run the installer directly
 
 ```bash
@@ -43,11 +71,13 @@ The script automatically:
 - runs `systemctl enable irisbrige-edge`
 - starts or restarts the service
 
+<a id="default-install-locations"></a>
 ### 2. Default install locations
 
 - Binary: `/usr/local/bin/irisbrige-edge`
 - systemd unit: `/etc/systemd/system/irisbrige-edge.service`
 
+<a id="default-service-user"></a>
 ### 3. Default service user
 
 The script chooses the service user as follows:
@@ -64,6 +94,7 @@ curl -fsSL \
   sudo env SERVICE_USER=appuser bash
 ```
 
+<a id="common-override-variables"></a>
 ### 4. Common override variables
 
 Example:
@@ -81,6 +112,7 @@ Supported variables:
 - `SERVICE_FILE`
 - `REPOSITORY`
 
+<a id="additional-environment-variables"></a>
 ### 5. Additional environment variables
 
 The script does not create a separate environment file.
@@ -104,6 +136,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart irisbrige-edge
 ```
 
+<a id="status-and-logs"></a>
 ### 6. Status and logs
 
 Check service status:
@@ -118,6 +151,7 @@ Follow logs:
 journalctl -u irisbrige-edge -f
 ```
 
+<a id="common-management-commands"></a>
 ### 7. Common management commands
 
 Start:
@@ -150,6 +184,7 @@ Disable at boot:
 sudo systemctl disable irisbrige-edge
 ```
 
+<a id="uninstall-with-the-script"></a>
 ### 8. Uninstall with the script
 
 Uninstaller URL:
@@ -173,10 +208,12 @@ Default behavior:
 - removes `/usr/local/bin/irisbrige-edge`
 - reloads `systemd`
 
+<a id="option-2"></a>
 ## Option 2: Manual Deployment
 
 These steps mirror the script logic, but everything is done manually.
 
+<a id="detect-the-architecture"></a>
 ### 1. Detect the architecture
 
 ```bash
@@ -200,6 +237,7 @@ esac
 echo "$ARCH"
 ```
 
+<a id="resolve-the-latest-release-tag"></a>
 ### 2. Resolve the latest release tag
 
 ```bash
@@ -216,6 +254,7 @@ Example output:
 v0.7.0
 ```
 
+<a id="build-the-download-url"></a>
 ### 3. Build the download URL
 
 ```bash
@@ -224,6 +263,7 @@ DOWNLOAD_URL="https://github.com/Irisbrige/homebrew-irisbrige/releases/download/
 echo "$DOWNLOAD_URL"
 ```
 
+<a id="download-and-extract"></a>
 ### 4. Download and extract
 
 ```bash
@@ -236,6 +276,7 @@ tar -xzf "${ARCHIVE_PATH}" -C "${TMP_DIR}"
 
 If the archive contains macOS extended headers, Linux may print `Ignoring unknown extended header keyword`. That warning usually does not affect installation.
 
+<a id="install-the-binary"></a>
 ### 5. Install the binary
 
 ```bash
@@ -249,6 +290,7 @@ Verify:
 /usr/local/bin/irisbrige-edge --help
 ```
 
+<a id="choose-the-service-user"></a>
 ### 6. Choose the service user
 
 Example with `root`:
@@ -273,6 +315,7 @@ Confirm the home directory exists:
 test -d "${APP_HOME}"
 ```
 
+<a id="create-the-systemd-service"></a>
 ### 7. Create the systemd service
 
 ```bash
@@ -302,6 +345,7 @@ EOF
 
 If you need extra environment variables, add more `Environment=KEY=value` lines under `[Service]`.
 
+<a id="reload-systemd-and-start-the-service"></a>
 ### 8. Reload systemd and start the service
 
 ```bash
@@ -317,6 +361,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart irisbrige-edge
 ```
 
+<a id="verify-the-service"></a>
 ### 9. Verify the service
 
 Status:
@@ -331,12 +376,14 @@ Logs:
 journalctl -u irisbrige-edge -f
 ```
 
+<a id="clean-up-temporary-files"></a>
 ### 10. Clean up temporary files
 
 ```bash
 rm -rf "${TMP_DIR}"
 ```
 
+<a id="troubleshooting"></a>
 ## Troubleshooting
 
 ### Service failed to start

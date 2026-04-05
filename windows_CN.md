@@ -9,6 +9,31 @@
 1. 使用仓库内的 PowerShell 脚本自动部署。
 2. 使用 WinSW 手动部署。
 
+## 目录
+
+- [前提条件](#prerequisites-zh)
+- [方式一：使用脚本自动部署](#option-1-zh)
+- [以管理员身份打开 PowerShell](#open-an-elevated-powershell-session-zh)
+- [执行安装脚本](#run-the-installer-zh)
+- [默认安装位置](#default-locations-zh)
+- [默认服务设置](#default-service-settings-zh)
+- [常用参数](#common-parameters-zh)
+- [查看服务状态和日志](#check-service-status-and-logs-zh)
+- [如需额外环境变量](#additional-environment-variables-zh)
+- [使用脚本卸载](#uninstall-with-the-script-zh)
+- [方式二：手动部署](#option-2-zh)
+- [检测架构](#detect-the-architecture-zh)
+- [获取最新 irisbrige-edge release](#resolve-the-latest-edge-release-zh)
+- [获取最新 WinSW release](#resolve-the-latest-winsw-release-zh)
+- [下载并解压文件](#download-and-extract-files-zh)
+- [安装文件](#install-the-files-zh)
+- [生成 WinSW XML](#create-the-winsw-xml-zh)
+- [安装并启动服务](#install-and-start-the-service-zh)
+- [验证服务](#verify-the-service-zh)
+- [清理临时文件](#remove-temporary-files-zh)
+- [故障排查](#troubleshooting-zh)
+
+<a id="prerequisites-zh"></a>
 ## 前提条件
 
 - Windows 10、Windows 11 或 Windows Server。
@@ -22,6 +47,7 @@
 - 要么在安装脚本中传入 `-CodexPath`，
 - 要么手动编辑生成的 WinSW XML，把正确目录加入 `PATH`
 
+<a id="option-1-zh"></a>
 ## 方式一：使用脚本自动部署
 
 脚本链接：
@@ -30,10 +56,12 @@
 https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-windows.ps1
 ```
 
+<a id="open-an-elevated-powershell-session-zh"></a>
 ### 1. 以管理员身份打开 PowerShell
 
 使用“以管理员身份运行”。
 
+<a id="run-the-installer-zh"></a>
 ### 2. 执行安装脚本
 
 直接从 GitHub 执行：
@@ -55,6 +83,7 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 - 生成 WinSW XML 配置
 - 安装并启动 Windows 服务
 
+<a id="default-locations-zh"></a>
 ### 3. 默认安装位置
 
 - 程序目录：`C:\Program Files\Irisbrige\irisbrige-edge`
@@ -63,6 +92,7 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 - Wrapper 可执行文件：`C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe`
 - Wrapper XML：`C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.xml`
 
+<a id="default-service-settings-zh"></a>
 ### 4. 默认服务设置
 
 - 内部服务 id：`irisbrigeedge`
@@ -70,6 +100,7 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 - 服务账户：`LocalSystem`
 - 启动方式：自动启动并启用 delayed auto start
 
+<a id="common-parameters-zh"></a>
 ### 5. 常用参数
 
 例如：
@@ -105,6 +136,7 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 - `LocalService`
 - `NetworkService`
 
+<a id="check-service-status-and-logs-zh"></a>
 ### 6. 查看服务状态和日志
 
 查看服务：
@@ -131,6 +163,7 @@ Get-ChildItem "C:\ProgramData\Irisbrige\irisbrige-edge\logs"
 Get-Content "C:\ProgramData\Irisbrige\irisbrige-edge\logs\*.log" -Wait
 ```
 
+<a id="additional-environment-variables-zh"></a>
 ### 7. 如需额外环境变量
 
 当前脚本不会创建单独的环境变量文件。
@@ -153,6 +186,7 @@ C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.xml
 & "C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe" restart
 ```
 
+<a id="uninstall-with-the-script-zh"></a>
 ### 8. 使用脚本卸载
 
 卸载脚本链接：
@@ -181,6 +215,7 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 & ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content)) -RemoveData
 ```
 
+<a id="option-2-zh"></a>
 ## 方式二：手动部署
 
 以下步骤与安装脚本逻辑一致，但全部手动完成。
@@ -189,6 +224,7 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 
 使用“以管理员身份运行”。
 
+<a id="detect-the-architecture-zh"></a>
 ### 2. 检测架构
 
 ```powershell
@@ -201,6 +237,7 @@ $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitect
 $arch
 ```
 
+<a id="resolve-the-latest-edge-release-zh"></a>
 ### 3. 获取最新 `irisbrige-edge` release
 
 ```powershell
@@ -218,6 +255,7 @@ $edgeAsset = $edgeRelease.assets | Where-Object { $_.name -eq $edgeAssetName } |
 $edgeAsset.browser_download_url
 ```
 
+<a id="resolve-the-latest-winsw-release-zh"></a>
 ### 4. 获取最新 WinSW release
 
 ```powershell
@@ -240,6 +278,7 @@ $winswAsset = foreach ($candidate in $winswAssetCandidates) {
 $winswAsset.browser_download_url
 ```
 
+<a id="download-and-extract-files-zh"></a>
 ### 5. 下载并解压文件
 
 ```powershell
@@ -261,6 +300,7 @@ Expand-Archive -Path $edgeZip -DestinationPath $edgeExtractDir -Force
 $edgeExe = Get-ChildItem -Path $edgeExtractDir -Recurse -Filter "irisbrige-edge.exe" -File | Select-Object -First 1
 ```
 
+<a id="install-the-files-zh"></a>
 ### 6. 安装文件
 
 ```powershell
@@ -271,6 +311,7 @@ Copy-Item $edgeExe.FullName (Join-Path $installDir "irisbrige-edge.exe") -Force
 Copy-Item $winswExe (Join-Path $installDir "irisbrige-edge-service.exe") -Force
 ```
 
+<a id="create-the-winsw-xml-zh"></a>
 ### 7. 生成 WinSW XML
 
 下面使用的 Windows 内部服务 id 是 `irisbrigeedge`。
@@ -303,6 +344,7 @@ $xmlPath = Join-Path $installDir "irisbrige-edge-service.xml"
 
 如果 `codex.exe` 不在 machine PATH 中，请先把它的目录追加到 `$servicePath`，再写入 XML。
 
+<a id="install-and-start-the-service-zh"></a>
 ### 8. 安装并启动服务
 
 ```powershell
@@ -312,6 +354,7 @@ $wrapper = Join-Path $installDir "irisbrige-edge-service.exe"
 & $wrapper start
 ```
 
+<a id="verify-the-service-zh"></a>
 ### 9. 验证服务
 
 ```powershell
@@ -320,12 +363,14 @@ Get-Service -Name irisbrigeedge
 Get-ChildItem $logsDir
 ```
 
+<a id="remove-temporary-files-zh"></a>
 ### 10. 清理临时文件
 
 ```powershell
 Remove-Item -Path $tempDir -Recurse -Force
 ```
 
+<a id="troubleshooting-zh"></a>
 ## 故障排查
 
 ### 服务启动后立即退出

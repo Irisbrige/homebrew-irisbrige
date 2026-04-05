@@ -4,12 +4,22 @@
 
 `homebrew-irisbrige` 提供了 `irisbrige-edge` 在不同平台上的安装和部署入口。
 
+## 目录
+
+- [平台说明](#platform-guide-zh)
+- [macOS](#macos-zh)
+- [Linux](#linux-zh)
+- [Windows](#windows-zh)
+- [仓库内容](#repository-contents-zh)
+
+<a id="platform-guide-zh"></a>
 ## 平台说明
 
 - `macOS`：通过 Homebrew 安装和管理服务。
 - `Linux`：通过仓库内脚本或手动方式部署，并使用 `systemd` 管理。
 - `Windows`：通过仓库内 PowerShell 安装脚本或使用 WinSW 手动部署服务。
 
+<a id="macos-zh"></a>
 ## macOS
 
 适用于 Apple Silicon 和 Intel Mac。
@@ -50,6 +60,7 @@ tail -f "$(brew --prefix)/var/log/irisbrige.log"
 - 服务实际运行命令为 `irisbrige-edge server`
 - 运行时要求 `codex` CLI 在 `PATH` 中可用
 
+<a id="linux-zh"></a>
 ## Linux
 
 Linux 部署说明单独放在文档中，包括：
@@ -61,6 +72,7 @@ Linux 部署说明单独放在文档中，包括：
 
 - [Linux 部署文档](./linux_CN.md)
 
+<a id="windows-zh"></a>
 ## Windows
 
 Windows 部署说明单独放在文档中，包括：
@@ -72,6 +84,7 @@ Windows 部署说明单独放在文档中，包括：
 
 - [Windows 部署文档](./windows_CN.md)
 
+<a id="repository-contents-zh"></a>
 ## 仓库内容
 
 - [Formula/irisbrige.rb](./Formula/irisbrige.rb)：macOS Homebrew Formula

@@ -9,6 +9,31 @@ It covers two approaches:
 1. Deploy automatically with the repository PowerShell script.
 2. Deploy manually with WinSW.
 
+## Contents
+
+- [Prerequisites](#prerequisites)
+- [Option 1: Deploy with the Script](#option-1)
+- [Open an elevated PowerShell session](#open-an-elevated-powershell-session)
+- [Run the installer](#run-the-installer)
+- [Default locations](#default-locations)
+- [Default service settings](#default-service-settings)
+- [Common parameters](#common-parameters)
+- [Check service status and logs](#check-service-status-and-logs)
+- [Additional environment variables](#additional-environment-variables)
+- [Uninstall with the script](#uninstall-with-the-script)
+- [Option 2: Manual Deployment](#option-2)
+- [Detect the architecture](#detect-the-architecture)
+- [Resolve the latest irisbrige-edge release](#resolve-the-latest-edge-release)
+- [Resolve the latest WinSW release](#resolve-the-latest-winsw-release)
+- [Download and extract files](#download-and-extract-files)
+- [Install the files](#install-the-files)
+- [Create the WinSW XML](#create-the-winsw-xml)
+- [Install and start the service](#install-and-start-the-service)
+- [Verify the service](#verify-the-service)
+- [Remove temporary files](#remove-temporary-files)
+- [Troubleshooting](#troubleshooting)
+
+<a id="prerequisites"></a>
 ## Prerequisites
 
 - Windows 10, Windows 11, or Windows Server.
@@ -22,6 +47,7 @@ If `irisbrige-edge` needs `codex.exe` at runtime:
 - pass `-CodexPath` to the installer script, or
 - edit the generated WinSW XML and add the correct directory to `PATH`
 
+<a id="option-1"></a>
 ## Option 1: Deploy with the Script
 
 Script URL:
@@ -30,10 +56,12 @@ Script URL:
 https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-windows.ps1
 ```
 
+<a id="open-an-elevated-powershell-session"></a>
 ### 1. Open an elevated PowerShell session
 
 Use "Run as Administrator".
 
+<a id="run-the-installer"></a>
 ### 2. Run the installer
 
 Run it directly from GitHub:
@@ -55,6 +83,7 @@ The script automatically:
 - writes the WinSW XML configuration
 - installs and starts the Windows service
 
+<a id="default-locations"></a>
 ### 3. Default locations
 
 - Binary directory: `C:\Program Files\Irisbrige\irisbrige-edge`
@@ -63,6 +92,7 @@ The script automatically:
 - Wrapper executable: `C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe`
 - Wrapper XML: `C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.xml`
 
+<a id="default-service-settings"></a>
 ### 4. Default service settings
 
 - Internal service id: `irisbrigeedge`
@@ -70,6 +100,7 @@ The script automatically:
 - Service account: `LocalSystem`
 - Start mode: automatic with delayed auto start
 
+<a id="common-parameters"></a>
 ### 5. Common parameters
 
 Example:
@@ -105,6 +136,7 @@ Supported parameters:
 - `LocalService`
 - `NetworkService`
 
+<a id="check-service-status-and-logs"></a>
 ### 6. Check service status and logs
 
 Check the service:
@@ -131,6 +163,7 @@ Follow logs:
 Get-Content "C:\ProgramData\Irisbrige\irisbrige-edge\logs\*.log" -Wait
 ```
 
+<a id="additional-environment-variables"></a>
 ### 7. Additional environment variables
 
 The script does not create a separate environment file.
@@ -153,6 +186,7 @@ Then restart the service:
 & "C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe" restart
 ```
 
+<a id="uninstall-with-the-script"></a>
 ### 8. Uninstall with the script
 
 Uninstaller URL:
@@ -181,6 +215,7 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 & ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content)) -RemoveData
 ```
 
+<a id="option-2"></a>
 ## Option 2: Manual Deployment
 
 These steps mirror the installer script, but everything is done manually.
@@ -189,6 +224,7 @@ These steps mirror the installer script, but everything is done manually.
 
 Use "Run as Administrator".
 
+<a id="detect-the-architecture"></a>
 ### 2. Detect the architecture
 
 ```powershell
@@ -201,6 +237,7 @@ $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitect
 $arch
 ```
 
+<a id="resolve-the-latest-edge-release"></a>
 ### 3. Resolve the latest `irisbrige-edge` release
 
 ```powershell
@@ -218,6 +255,7 @@ $edgeAsset = $edgeRelease.assets | Where-Object { $_.name -eq $edgeAssetName } |
 $edgeAsset.browser_download_url
 ```
 
+<a id="resolve-the-latest-winsw-release"></a>
 ### 4. Resolve the latest WinSW release
 
 ```powershell
@@ -240,6 +278,7 @@ $winswAsset = foreach ($candidate in $winswAssetCandidates) {
 $winswAsset.browser_download_url
 ```
 
+<a id="download-and-extract-files"></a>
 ### 5. Download and extract files
 
 ```powershell
@@ -261,6 +300,7 @@ Expand-Archive -Path $edgeZip -DestinationPath $edgeExtractDir -Force
 $edgeExe = Get-ChildItem -Path $edgeExtractDir -Recurse -Filter "irisbrige-edge.exe" -File | Select-Object -First 1
 ```
 
+<a id="install-the-files"></a>
 ### 6. Install the files
 
 ```powershell
@@ -271,6 +311,7 @@ Copy-Item $edgeExe.FullName (Join-Path $installDir "irisbrige-edge.exe") -Force
 Copy-Item $winswExe (Join-Path $installDir "irisbrige-edge-service.exe") -Force
 ```
 
+<a id="create-the-winsw-xml"></a>
 ### 7. Create the WinSW XML
 
 The Windows service internal id below is `irisbrigeedge`.
@@ -303,6 +344,7 @@ $xmlPath = Join-Path $installDir "irisbrige-edge-service.xml"
 
 If `codex.exe` is not on the machine PATH, add its directory into `$servicePath` before writing the XML.
 
+<a id="install-and-start-the-service"></a>
 ### 8. Install and start the service
 
 ```powershell
@@ -312,6 +354,7 @@ $wrapper = Join-Path $installDir "irisbrige-edge-service.exe"
 & $wrapper start
 ```
 
+<a id="verify-the-service"></a>
 ### 9. Verify the service
 
 ```powershell
@@ -320,12 +363,14 @@ Get-Service -Name irisbrigeedge
 Get-ChildItem $logsDir
 ```
 
+<a id="remove-temporary-files"></a>
 ### 10. Remove temporary files
 
 ```powershell
 Remove-Item -Path $tempDir -Recurse -Force
 ```
 
+<a id="troubleshooting"></a>
 ## Troubleshooting
 
 ### The service starts but exits immediately

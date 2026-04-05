@@ -9,6 +9,32 @@
 1. 使用仓库内的安装脚本自动部署。
 2. 不使用脚本，手动一步一步部署。
 
+## 目录
+
+- [前提条件](#prerequisites-zh)
+- [方式一：使用脚本自动部署](#option-1-zh)
+- [直接执行安装脚本](#run-installer-directly-zh)
+- [默认安装位置](#default-install-locations-zh)
+- [默认运行用户](#default-service-user-zh)
+- [常见可覆盖变量](#common-override-variables-zh)
+- [如需额外环境变量](#additional-environment-variables-zh)
+- [查看服务状态和日志](#status-and-logs-zh)
+- [常见管理命令](#common-management-commands-zh)
+- [使用脚本卸载](#uninstall-with-the-script-zh)
+- [方式二：不使用脚本，手动部署](#option-2-zh)
+- [确认架构](#detect-the-architecture-zh)
+- [获取最新版本标签](#resolve-the-latest-release-tag-zh)
+- [拼接下载地址](#build-the-download-url-zh)
+- [下载并解压](#download-and-extract-zh)
+- [安装二进制](#install-the-binary-zh)
+- [选择服务运行用户](#choose-the-service-user-zh)
+- [创建 systemd 服务文件](#create-the-systemd-service-zh)
+- [重新加载 systemd 并启动服务](#reload-systemd-and-start-the-service-zh)
+- [检查服务是否正常运行](#verify-the-service-zh)
+- [清理临时文件](#clean-up-temporary-files-zh)
+- [故障排查](#troubleshooting-zh)
+
+<a id="prerequisites-zh"></a>
 ## 前提条件
 
 - 操作系统为 Linux。
@@ -16,6 +42,7 @@
 - 已安装 `curl`、`tar`、`systemctl`。
 - 具备 `root` 或 `sudo` 权限。
 
+<a id="option-1-zh"></a>
 ## 方式一：使用脚本自动部署
 
 安装脚本链接：
@@ -24,6 +51,7 @@
 https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh
 ```
 
+<a id="run-installer-directly-zh"></a>
 ### 1. 直接执行安装脚本
 
 ```bash
@@ -43,11 +71,13 @@ curl -fsSL \
 - 执行 `systemctl enable irisbrige-edge`
 - 启动或重启服务
 
+<a id="default-install-locations-zh"></a>
 ### 2. 默认安装位置
 
 - 二进制文件：`/usr/local/bin/irisbrige-edge`
 - systemd 服务文件：`/etc/systemd/system/irisbrige-edge.service`
 
+<a id="default-service-user-zh"></a>
 ### 3. 默认运行用户
 
 脚本对运行用户的处理规则如下：
@@ -64,6 +94,7 @@ curl -fsSL \
   sudo env SERVICE_USER=appuser bash
 ```
 
+<a id="common-override-variables-zh"></a>
 ### 4. 常见可覆盖变量
 
 例如：
@@ -81,6 +112,7 @@ curl -fsSL \
 - `SERVICE_FILE`
 - `REPOSITORY`
 
+<a id="additional-environment-variables-zh"></a>
 ### 5. 如需额外环境变量
 
 当前脚本不会创建单独的环境变量文件。
@@ -104,6 +136,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart irisbrige-edge
 ```
 
+<a id="status-and-logs-zh"></a>
 ### 6. 查看服务状态和日志
 
 查看服务状态：
@@ -118,6 +151,7 @@ systemctl status irisbrige-edge --no-pager
 journalctl -u irisbrige-edge -f
 ```
 
+<a id="common-management-commands-zh"></a>
 ### 7. 常见管理命令
 
 启动：
@@ -150,6 +184,7 @@ sudo systemctl enable irisbrige-edge
 sudo systemctl disable irisbrige-edge
 ```
 
+<a id="uninstall-with-the-script-zh"></a>
 ### 8. 使用脚本卸载
 
 卸载脚本链接：
@@ -173,10 +208,12 @@ curl -fsSL \
 - 删除 `/usr/local/bin/irisbrige-edge`
 - 重新加载 `systemd`
 
+<a id="option-2-zh"></a>
 ## 方式二：不使用脚本，手动部署
 
 以下步骤与脚本逻辑一致，但全部手动执行。
 
+<a id="detect-the-architecture-zh"></a>
 ### 1. 确认架构
 
 ```bash
@@ -200,6 +237,7 @@ esac
 echo "$ARCH"
 ```
 
+<a id="resolve-the-latest-release-tag-zh"></a>
 ### 2. 获取最新版本标签
 
 ```bash
@@ -216,6 +254,7 @@ echo "$RELEASE_TAG"
 v0.7.0
 ```
 
+<a id="build-the-download-url-zh"></a>
 ### 3. 拼接下载地址
 
 ```bash
@@ -224,6 +263,7 @@ DOWNLOAD_URL="https://github.com/Irisbrige/homebrew-irisbrige/releases/download/
 echo "$DOWNLOAD_URL"
 ```
 
+<a id="download-and-extract-zh"></a>
 ### 4. 下载并解压
 
 ```bash
@@ -236,6 +276,7 @@ tar -xzf "${ARCHIVE_PATH}" -C "${TMP_DIR}"
 
 如果发布包内带有 macOS 扩展头，Linux 上解压时出现 `Ignoring unknown extended header keyword` 告警通常不影响使用。
 
+<a id="install-the-binary-zh"></a>
 ### 5. 安装二进制
 
 ```bash
@@ -249,6 +290,7 @@ sudo install -m 0755 "${TMP_DIR}/irisbrige-edge" /usr/local/bin/irisbrige-edge
 /usr/local/bin/irisbrige-edge --help
 ```
 
+<a id="choose-the-service-user-zh"></a>
 ### 6. 选择服务运行用户
 
 以 `root` 为例：
@@ -273,6 +315,7 @@ APP_HOME="$(getent passwd "${APP_USER}" | awk -F: '{print $6}')"
 test -d "${APP_HOME}"
 ```
 
+<a id="create-the-systemd-service-zh"></a>
 ### 7. 创建 systemd 服务文件
 
 ```bash
@@ -306,6 +349,7 @@ EOF
 Environment=OPENAI_API_KEY=your-token
 ```
 
+<a id="reload-systemd-and-start-the-service-zh"></a>
 ### 8. 重新加载 systemd 并启动服务
 
 ```bash
@@ -321,6 +365,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart irisbrige-edge
 ```
 
+<a id="verify-the-service-zh"></a>
 ### 9. 检查服务是否正常运行
 
 查看状态：
@@ -335,12 +380,14 @@ systemctl status irisbrige-edge --no-pager
 journalctl -u irisbrige-edge -f
 ```
 
+<a id="clean-up-temporary-files-zh"></a>
 ### 10. 清理临时文件
 
 ```bash
 rm -rf "${TMP_DIR}"
 ```
 
+<a id="troubleshooting-zh"></a>
 ## 故障排查
 
 ### 服务启动失败
