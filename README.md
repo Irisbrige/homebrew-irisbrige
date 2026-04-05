@@ -8,7 +8,7 @@
 
 - `macOS`: install and manage the service with Homebrew.
 - `Linux`: deploy with the included script or manually, then manage with `systemd`.
-- `Windows`: this repository does not currently provide install or service management instructions.
+- `Windows`: deploy with the included PowerShell installer or manually with WinSW.
 
 ## macOS
 
@@ -61,8 +61,23 @@ See:
 
 - [Linux Deployment Guide](./linux.md)
 
+## Windows
+
+Windows deployment is documented separately. The Windows guide includes:
+
+- automatic deployment with the repository PowerShell installer
+- manual deployment with WinSW
+
+See:
+
+- [Windows Deployment Guide](./windows.md)
+
 ## Repository Contents
 
 - [Formula/irisbrige.rb](./Formula/irisbrige.rb): Homebrew formula for macOS
 - [scripts/install-irisbrige-edge-linux.sh](./scripts/install-irisbrige-edge-linux.sh): automated Linux deployment script
+- [scripts/uninstall-irisbrige-edge-linux.sh](./scripts/uninstall-irisbrige-edge-linux.sh): Linux uninstaller script
+- [scripts/install-irisbrige-edge-windows.ps1](./scripts/install-irisbrige-edge-windows.ps1): automated Windows deployment script
+- [scripts/uninstall-irisbrige-edge-windows.ps1](./scripts/uninstall-irisbrige-edge-windows.ps1): Windows uninstaller script
 - [linux.md](./linux.md): detailed Linux deployment guide
+- [windows.md](./windows.md): detailed Windows deployment guide

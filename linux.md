@@ -18,25 +18,17 @@ It covers two approaches:
 
 ## Option 1: Deploy with the Script
 
-Script path:
+Script URL:
 
 ```bash
-scripts/install-irisbrige-edge-linux.sh
+https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh
 ```
 
-### 1. Get the script
-
-If you are already inside the repository:
+### 1. Run the installer directly
 
 ```bash
-cd /path/to/homebrew-irisbrige
-chmod +x ./scripts/install-irisbrige-edge-linux.sh
-```
-
-### 2. Run the installer
-
-```bash
-sudo ./scripts/install-irisbrige-edge-linux.sh
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh | sudo bash
 ```
 
 The script automatically:
@@ -51,12 +43,12 @@ The script automatically:
 - runs `systemctl enable irisbrige-edge`
 - starts or restarts the service
 
-### 3. Default install locations
+### 2. Default install locations
 
 - Binary: `/usr/local/bin/irisbrige-edge`
 - systemd unit: `/etc/systemd/system/irisbrige-edge.service`
 
-### 4. Default service user
+### 3. Default service user
 
 The script chooses the service user as follows:
 
@@ -67,15 +59,19 @@ The script chooses the service user as follows:
 Example:
 
 ```bash
-sudo SERVICE_USER=appuser ./scripts/install-irisbrige-edge-linux.sh
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh | \
+  sudo env SERVICE_USER=appuser bash
 ```
 
-### 5. Common override variables
+### 4. Common override variables
 
 Example:
 
 ```bash
-sudo SERVICE_USER=appuser INSTALL_DIR=/usr/local/bin ./scripts/install-irisbrige-edge-linux.sh
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh | \
+  sudo env SERVICE_USER=appuser INSTALL_DIR=/usr/local/bin bash
 ```
 
 Supported variables:
@@ -85,7 +81,7 @@ Supported variables:
 - `SERVICE_FILE`
 - `REPOSITORY`
 
-### 6. Additional environment variables
+### 5. Additional environment variables
 
 The script does not create a separate environment file.
 
@@ -108,7 +104,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart irisbrige-edge
 ```
 
-### 7. Status and logs
+### 6. Status and logs
 
 Check service status:
 
@@ -122,7 +118,7 @@ Follow logs:
 journalctl -u irisbrige-edge -f
 ```
 
-### 8. Common management commands
+### 7. Common management commands
 
 Start:
 
@@ -153,6 +149,29 @@ Disable at boot:
 ```bash
 sudo systemctl disable irisbrige-edge
 ```
+
+### 8. Uninstall with the script
+
+Uninstaller URL:
+
+```bash
+https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-linux.sh
+```
+
+Run it directly from GitHub:
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-linux.sh | sudo bash
+```
+
+Default behavior:
+
+- stops the `systemd` service if it is running
+- disables the service if it is installed
+- removes `/etc/systemd/system/irisbrige-edge.service`
+- removes `/usr/local/bin/irisbrige-edge`
+- reloads `systemd`
 
 ## Option 2: Manual Deployment
 
@@ -194,7 +213,7 @@ echo "$RELEASE_TAG"
 Example output:
 
 ```bash
-v0.6.0
+v0.7.0
 ```
 
 ### 3. Build the download URL
@@ -335,6 +354,15 @@ Verify the file exists and is executable:
 
 ```bash
 ls -l /usr/local/bin/irisbrige-edge
+```
+
+### You want to remove the service completely
+
+Use the uninstall script:
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-linux.sh | sudo bash
 ```
 
 ### Permission denied

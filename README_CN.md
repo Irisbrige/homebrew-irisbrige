@@ -8,7 +8,7 @@
 
 - `macOS`：通过 Homebrew 安装和管理服务。
 - `Linux`：通过仓库内脚本或手动方式部署，并使用 `systemd` 管理。
-- `Windows`：当前仓库未提供安装和服务管理说明。
+- `Windows`：通过仓库内 PowerShell 安装脚本或使用 WinSW 手动部署服务。
 
 ## macOS
 
@@ -61,8 +61,23 @@ Linux 部署说明单独放在文档中，包括：
 
 - [Linux 部署文档](./linux_CN.md)
 
+## Windows
+
+Windows 部署说明单独放在文档中，包括：
+
+- 使用仓库内 PowerShell 安装脚本自动部署
+- 使用 WinSW 手动部署服务
+
+详细说明见：
+
+- [Windows 部署文档](./windows_CN.md)
+
 ## 仓库内容
 
 - [Formula/irisbrige.rb](./Formula/irisbrige.rb)：macOS Homebrew Formula
 - [scripts/install-irisbrige-edge-linux.sh](./scripts/install-irisbrige-edge-linux.sh)：Linux 自动部署脚本
+- [scripts/uninstall-irisbrige-edge-linux.sh](./scripts/uninstall-irisbrige-edge-linux.sh)：Linux 卸载脚本
+- [scripts/install-irisbrige-edge-windows.ps1](./scripts/install-irisbrige-edge-windows.ps1)：Windows 自动部署脚本
+- [scripts/uninstall-irisbrige-edge-windows.ps1](./scripts/uninstall-irisbrige-edge-windows.ps1)：Windows 卸载脚本
 - [linux_CN.md](./linux_CN.md)：Linux 中文部署文档
+- [windows_CN.md](./windows_CN.md)：Windows 中文部署文档

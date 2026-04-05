@@ -1,0 +1,367 @@
+# Windows 部署说明
+
+[English](./windows.md)
+
+本文说明如何在 Windows 上部署 `irisbrige-edge` 并让它作为 Windows 服务长期运行。
+
+包含两种方式：
+
+1. 使用仓库内的 PowerShell 脚本自动部署。
+2. 使用 WinSW 手动部署。
+
+## 前提条件
+
+- Windows 10、Windows 11 或 Windows Server。
+- PowerShell 5.1 或更新版本。
+- 具备管理员权限。
+- 可以访问 GitHub Releases。
+
+如果 `irisbrige-edge` 运行时依赖 `codex.exe`：
+
+- 要么确保 `codex.exe` 已经在 `PATH` 中，
+- 要么在安装脚本中传入 `-CodexPath`，
+- 要么手动编辑生成的 WinSW XML，把正确目录加入 `PATH`
+
+## 方式一：使用脚本自动部署
+
+脚本链接：
+
+```powershell
+https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-windows.ps1
+```
+
+### 1. 以管理员身份打开 PowerShell
+
+使用“以管理员身份运行”。
+
+### 2. 执行安装脚本
+
+直接从 GitHub 执行：
+
+```powershell
+$scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-windows.ps1"
+& ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content))
+```
+
+脚本会自动完成以下操作：
+
+- 判断当前 Windows 架构是 `amd64` 还是 `arm64`
+- 通过 GitHub 自动获取最新 `irisbrige-edge` release
+- 下载匹配当前架构的 Windows zip 包
+- 通过 GitHub 自动获取最新 WinSW release
+- 优先使用原生 arm64 WinSW wrapper；如果不存在，则回退到 `WinSW-x64.exe`
+- 解压 `irisbrige-edge.exe`
+- 安装可执行文件和 WinSW wrapper
+- 生成 WinSW XML 配置
+- 安装并启动 Windows 服务
+
+### 3. 默认安装位置
+
+- 程序目录：`C:\Program Files\Irisbrige\irisbrige-edge`
+- 数据目录：`C:\ProgramData\Irisbrige\irisbrige-edge`
+- 日志目录：`C:\ProgramData\Irisbrige\irisbrige-edge\logs`
+- Wrapper 可执行文件：`C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe`
+- Wrapper XML：`C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.xml`
+
+### 4. 默认服务设置
+
+- 内部服务 id：`irisbrigeedge`
+- 显示名称：`Irisbrige Edge`
+- 服务账户：`LocalSystem`
+- 启动方式：自动启动并启用 delayed auto start
+
+### 5. 常用参数
+
+例如：
+
+```powershell
+$scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-windows.ps1"
+& ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content)) `
+  -ServiceId irisbrigeedge `
+  -DisplayName "Irisbrige Edge" `
+  -InstallDir "C:\Program Files\Irisbrige\irisbrige-edge" `
+  -DataDir "C:\ProgramData\Irisbrige\irisbrige-edge" `
+  -CodexPath "C:\Users\rose\AppData\Local\Programs\codex"
+```
+
+支持的参数：
+
+- `Repository`
+- `WinSWRepository`
+- `BinaryName`
+- `ServiceId`
+- `DisplayName`
+- `Description`
+- `InstallDir`
+- `DataDir`
+- `WrapperName`
+- `ServiceAccount`
+- `CodexPath`
+- `AdditionalPath`
+
+`ServiceAccount` 当前支持：
+
+- `LocalSystem`
+- `LocalService`
+- `NetworkService`
+
+### 6. 查看服务状态和日志
+
+查看服务：
+
+```powershell
+Get-Service -Name irisbrigeedge
+```
+
+查看 wrapper 状态：
+
+```powershell
+& "C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe" status
+```
+
+列出日志文件：
+
+```powershell
+Get-ChildItem "C:\ProgramData\Irisbrige\irisbrige-edge\logs"
+```
+
+持续查看日志：
+
+```powershell
+Get-Content "C:\ProgramData\Irisbrige\irisbrige-edge\logs\*.log" -Wait
+```
+
+### 7. 如需额外环境变量
+
+当前脚本不会创建单独的环境变量文件。
+
+如果服务需要额外环境变量，直接编辑：
+
+```powershell
+C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.xml
+```
+
+增加类似：
+
+```xml
+<env name="OPENAI_API_KEY" value="your-token" />
+```
+
+然后重启服务：
+
+```powershell
+& "C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe" restart
+```
+
+### 8. 使用脚本卸载
+
+卸载脚本链接：
+
+```powershell
+https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-windows.ps1
+```
+
+默认行为：
+
+- 删除 Windows 服务注册
+- 删除程序安装目录
+- 保留数据目录
+
+执行：
+
+```powershell
+$scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-windows.ps1"
+& ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content))
+```
+
+如果你还想删除数据目录和日志：
+
+```powershell
+$scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-windows.ps1"
+& ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content)) -RemoveData
+```
+
+## 方式二：手动部署
+
+以下步骤与安装脚本逻辑一致，但全部手动完成。
+
+### 1. 以管理员身份打开 PowerShell
+
+使用“以管理员身份运行”。
+
+### 2. 检测架构
+
+```powershell
+$arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) {
+  "X64"   { "amd64" }
+  "Arm64" { "arm64" }
+  default { throw "Unsupported architecture: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)" }
+}
+
+$arch
+```
+
+### 3. 获取最新 `irisbrige-edge` release
+
+```powershell
+$headers = @{
+  Accept = "application/vnd.github+json"
+  "User-Agent" = "irisbrige-edge-installer"
+}
+
+$edgeRelease = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/Irisbrige/homebrew-irisbrige/releases/latest"
+$edgeTag = $edgeRelease.tag_name
+$edgeVersion = $edgeTag.TrimStart("v")
+$edgeAssetName = "irisbrige-edge_${edgeVersion}_windows_${arch}.zip"
+$edgeAsset = $edgeRelease.assets | Where-Object { $_.name -eq $edgeAssetName } | Select-Object -First 1
+
+$edgeAsset.browser_download_url
+```
+
+### 4. 获取最新 WinSW release
+
+```powershell
+$winswRelease = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/winsw/winsw/releases/latest"
+
+$winswAssetCandidates = if ($arch -eq "arm64") {
+  @("WinSW-arm64.exe", "WinSW-x64.exe")
+} else {
+  @("WinSW-x64.exe")
+}
+
+$winswAsset = foreach ($candidate in $winswAssetCandidates) {
+  $match = $winswRelease.assets | Where-Object { $_.name -eq $candidate } | Select-Object -First 1
+  if ($match) {
+    $match
+    break
+  }
+}
+
+$winswAsset.browser_download_url
+```
+
+### 5. 下载并解压文件
+
+```powershell
+$installDir = "C:\Program Files\Irisbrige\irisbrige-edge"
+$dataDir = "C:\ProgramData\Irisbrige\irisbrige-edge"
+$logsDir = Join-Path $dataDir "logs"
+$tempDir = Join-Path $env:TEMP ("irisbrige-edge-install-" + [guid]::NewGuid().ToString("N"))
+
+New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+$edgeZip = Join-Path $tempDir "irisbrige-edge.zip"
+$edgeExtractDir = Join-Path $tempDir "edge"
+$winswExe = Join-Path $tempDir $winswAsset.name
+
+Invoke-WebRequest -Headers $headers -Uri $edgeAsset.browser_download_url -OutFile $edgeZip -UseBasicParsing
+Invoke-WebRequest -Headers $headers -Uri $winswAsset.browser_download_url -OutFile $winswExe -UseBasicParsing
+
+Expand-Archive -Path $edgeZip -DestinationPath $edgeExtractDir -Force
+$edgeExe = Get-ChildItem -Path $edgeExtractDir -Recurse -Filter "irisbrige-edge.exe" -File | Select-Object -First 1
+```
+
+### 6. 安装文件
+
+```powershell
+New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
+
+Copy-Item $edgeExe.FullName (Join-Path $installDir "irisbrige-edge.exe") -Force
+Copy-Item $winswExe (Join-Path $installDir "irisbrige-edge-service.exe") -Force
+```
+
+### 7. 生成 WinSW XML
+
+下面使用的 Windows 内部服务 id 是 `irisbrigeedge`。
+
+```powershell
+$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$servicePath = "$installDir;$machinePath"
+$xmlPath = Join-Path $installDir "irisbrige-edge-service.xml"
+
+@"
+<service>
+  <id>irisbrigeedge</id>
+  <name>Irisbrige Edge</name>
+  <description>Irisbrige Edge background service</description>
+  <executable>%BASE%\irisbrige-edge.exe</executable>
+  <arguments>server</arguments>
+  <workingdirectory>%BASE%</workingdirectory>
+  <startmode>Automatic</startmode>
+  <delayedAutoStart/>
+  <env name="PATH" value="$servicePath" />
+  <logpath>$logsDir</logpath>
+  <log mode="roll" />
+  <onfailure action="restart" delay="10 sec" />
+  <serviceaccount>
+    <user>LocalSystem</user>
+  </serviceaccount>
+</service>
+"@ | Set-Content -Path $xmlPath -Encoding ASCII
+```
+
+如果 `codex.exe` 不在 machine PATH 中，请先把它的目录追加到 `$servicePath`，再写入 XML。
+
+### 8. 安装并启动服务
+
+```powershell
+$wrapper = Join-Path $installDir "irisbrige-edge-service.exe"
+
+& $wrapper install
+& $wrapper start
+```
+
+### 9. 验证服务
+
+```powershell
+Get-Service -Name irisbrigeedge
+& $wrapper status
+Get-ChildItem $logsDir
+```
+
+### 10. 清理临时文件
+
+```powershell
+Remove-Item -Path $tempDir -Recurse -Force
+```
+
+## 故障排查
+
+### 服务启动后立即退出
+
+优先查看：
+
+```powershell
+Get-ChildItem "C:\ProgramData\Irisbrige\irisbrige-edge\logs"
+Get-Content "C:\ProgramData\Irisbrige\irisbrige-edge\logs\*.log" -Tail 200
+```
+
+### 找不到 `codex.exe`
+
+重新执行安装脚本并传入 `-CodexPath`，或者编辑 WinSW XML，把正确目录加入 `PATH` 环境变量。
+
+### 服务已经存在，但需要重新安装
+
+```powershell
+& "C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe" stop
+& "C:\Program Files\Irisbrige\irisbrige-edge\irisbrige-edge-service.exe" uninstall
+```
+
+然后重新运行安装脚本。
+
+### 需要彻底移除服务
+
+使用卸载脚本：
+
+```powershell
+$scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-windows.ps1"
+& ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content))
+```
+
+如果还要删除数据目录：
+
+```powershell
+$scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-windows.ps1"
+& ([ScriptBlock]::Create((Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing).Content)) -RemoveData
+```

@@ -18,27 +18,17 @@
 
 ## 方式一：使用脚本自动部署
 
-安装脚本路径：
+安装脚本链接：
 
 ```bash
-scripts/install-irisbrige-edge-linux.sh
+https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh
 ```
 
-### 1. 获取脚本
-
-如果你已经在仓库目录中，可以直接使用：
+### 1. 直接执行安装脚本
 
 ```bash
-cd /path/to/homebrew-irisbrige
-chmod +x ./scripts/install-irisbrige-edge-linux.sh
-```
-
-### 2. 执行安装
-
-直接执行：
-
-```bash
-sudo ./scripts/install-irisbrige-edge-linux.sh
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh | sudo bash
 ```
 
 脚本会自动完成以下操作：
@@ -53,12 +43,12 @@ sudo ./scripts/install-irisbrige-edge-linux.sh
 - 执行 `systemctl enable irisbrige-edge`
 - 启动或重启服务
 
-### 3. 默认安装位置
+### 2. 默认安装位置
 
 - 二进制文件：`/usr/local/bin/irisbrige-edge`
 - systemd 服务文件：`/etc/systemd/system/irisbrige-edge.service`
 
-### 4. 默认运行用户
+### 3. 默认运行用户
 
 脚本对运行用户的处理规则如下：
 
@@ -69,15 +59,19 @@ sudo ./scripts/install-irisbrige-edge-linux.sh
 例如：
 
 ```bash
-sudo SERVICE_USER=appuser ./scripts/install-irisbrige-edge-linux.sh
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh | \
+  sudo env SERVICE_USER=appuser bash
 ```
 
-### 5. 常见可覆盖变量
+### 4. 常见可覆盖变量
 
 例如：
 
 ```bash
-sudo SERVICE_USER=appuser INSTALL_DIR=/usr/local/bin ./scripts/install-irisbrige-edge-linux.sh
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/install-irisbrige-edge-linux.sh | \
+  sudo env SERVICE_USER=appuser INSTALL_DIR=/usr/local/bin bash
 ```
 
 支持的变量：
@@ -87,7 +81,7 @@ sudo SERVICE_USER=appuser INSTALL_DIR=/usr/local/bin ./scripts/install-irisbrige
 - `SERVICE_FILE`
 - `REPOSITORY`
 
-### 6. 如需额外环境变量
+### 5. 如需额外环境变量
 
 当前脚本不会创建单独的环境变量文件。
 
@@ -110,7 +104,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart irisbrige-edge
 ```
 
-### 7. 查看服务状态和日志
+### 6. 查看服务状态和日志
 
 查看服务状态：
 
@@ -124,7 +118,7 @@ systemctl status irisbrige-edge --no-pager
 journalctl -u irisbrige-edge -f
 ```
 
-### 8. 常见管理命令
+### 7. 常见管理命令
 
 启动：
 
@@ -155,6 +149,29 @@ sudo systemctl enable irisbrige-edge
 ```bash
 sudo systemctl disable irisbrige-edge
 ```
+
+### 8. 使用脚本卸载
+
+卸载脚本链接：
+
+```bash
+https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-linux.sh
+```
+
+直接从 GitHub 执行：
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-linux.sh | sudo bash
+```
+
+默认行为：
+
+- 如果服务正在运行，则停止 `systemd` 服务
+- 如果服务已安装，则禁用该服务
+- 删除 `/etc/systemd/system/irisbrige-edge.service`
+- 删除 `/usr/local/bin/irisbrige-edge`
+- 重新加载 `systemd`
 
 ## 方式二：不使用脚本，手动部署
 
@@ -196,7 +213,7 @@ echo "$RELEASE_TAG"
 例如当前可能得到：
 
 ```bash
-v0.6.0
+v0.7.0
 ```
 
 ### 3. 拼接下载地址
@@ -341,6 +358,15 @@ journalctl -u irisbrige-edge -n 100 --no-pager
 
 ```bash
 ls -l /usr/local/bin/irisbrige-edge
+```
+
+### 需要彻底移除服务
+
+使用卸载脚本：
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/refs/heads/main/scripts/uninstall-irisbrige-edge-linux.sh | sudo bash
 ```
 
 ### 提示权限不足
