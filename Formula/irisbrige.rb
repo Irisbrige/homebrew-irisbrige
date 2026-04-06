@@ -1,22 +1,76 @@
 class Irisbrige < Formula
   desc "Local macOS relay for iOS and Codex App Server RPC"
   homepage "https://github.com/Irisbrige/homebrew-irisbrige"
-  version "0.6.0"
+  version "0.8.0"
 
   if Hardware::CPU.arm?
-    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.6.0/irisbrige-edge_0.6.0_darwin_arm64.tar.gz"
-    sha256 "f551c4387727f91b615f7b5f896824c3c0703393d5902c0b700445a431b511ac"
+    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.8.0/irisbrige-edge_0.8.0_darwin_arm64.tar.gz"
+    sha256 "fee0720800eda7b03ff7ab6ea8ff9d8ffe501b3b0e9373278edf7908d40aebdd"
   else
-    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.6.0/irisbrige-edge_0.6.0_darwin_amd64.tar.gz"
-    sha256 "6bd1e40a91b790a66ddfd8c2b6a4b017f2dff505d683be2f0594e0f4a2845444"
+    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.8.0/irisbrige-edge_0.8.0_darwin_amd64.tar.gz"
+    sha256 "db009dfd0acb47b4c12a87513d1d0f814641436007d79bf3401f757421e7cb9f"
   end
 
   def install
     bin.install "irisbrige-edge"
+
+    (libexec/"irisbrige-edge-service").write <<~SH
+      #!/bin/sh
+      set -e
+
+      SERVICE_BIN="#{opt_bin}/irisbrige-edge"
+      SERVICE_ENV_DIR="$HOME/.config/irisbrige-edge"
+      SERVICE_ENV_FILE="$SERVICE_ENV_DIR/service.env"
+      SERVICE_PATH="${PATH:-}"
+
+      if [ ! -e "$SERVICE_ENV_FILE" ]; then
+        (
+          umask 077
+          mkdir -p "$SERVICE_ENV_DIR"
+          printf '%s\n' \
+            '# irisbrige-edge background service environment' \
+            '# Edit this file directly. Add shell-compatible KEY=VALUE lines below.' \
+            '#' \
+            '# Examples:' \
+            '# MY_PROVIDER_API_KEY=replace-me' \
+            '# MY_CUSTOM_BASE_URL=https://example.com' \
+            '# IRISBRIGE_ENV_CHECK=service-ready' \
+            > "$SERVICE_ENV_FILE"
+        ) || true
+
+        if [ -e "$SERVICE_ENV_FILE" ]; then
+          echo "irisbrige-edge service: created editable env file at $SERVICE_ENV_FILE"
+        fi
+      fi
+
+      if [ -r "$SERVICE_ENV_FILE" ]; then
+        set -a
+        . "$SERVICE_ENV_FILE"
+        set +a
+        echo "irisbrige-edge service: loaded environment from $SERVICE_ENV_FILE"
+      fi
+
+      if [ -n "$SERVICE_PATH" ]; then
+        case ":${PATH:-}:" in
+          *":$SERVICE_PATH:"*) ;;
+          *)
+            if [ -n "${PATH:-}" ]; then
+              PATH="${PATH}:$SERVICE_PATH"
+            else
+              PATH="$SERVICE_PATH"
+            fi
+            ;;
+        esac
+      fi
+
+      export PATH
+      exec "$SERVICE_BIN" server
+    SH
+    chmod 0755, libexec/"irisbrige-edge-service"
   end
 
   service do
-    run [opt_bin/"irisbrige-edge", "server"]
+    run [opt_libexec/"irisbrige-edge-service"]
     keep_alive true
     process_type :background
     environment_variables PATH: std_service_path_env
@@ -34,18 +88,37 @@ class Irisbrige < Formula
       Start the background service manually with:
         brew services start irisbrige
 
-      The service runs:
+      `brew services` runs under `launchd` and does not inherit variables from
+      your interactive shell.
+
+      The background service uses a dedicated editable env file:
+        ~/.config/irisbrige-edge/service.env
+
+      If the file does not exist, the service wrapper creates it with commented
+      examples on first start.
+
+      Edit that file directly and add shell-compatible `KEY=VALUE` lines, for
+      example:
+        MY_PROVIDER_API_KEY=replace-me
+        MY_CUSTOM_BASE_URL=https://example.com
+        IRISBRIGE_ENV_CHECK=service-ready
+
+      Restart after editing:
+        brew services restart irisbrige
+
+      The service wrapper loads that file before it starts:
         irisbrige-edge server
 
       Logs are written to:
         #{var}/log/irisbrige.log
         #{var}/log/irisbrige.error.log
 
-      Runtime expects the `codex` CLI to be available on PATH.
+      The wrapper preserves Homebrew's PATH so the `codex` CLI stays available.
     EOS
   end
 
   test do
+    assert_path_exists libexec/"irisbrige-edge-service"
     assert_match "Usage:", shell_output("#{bin}/irisbrige-edge --help")
   end
 end

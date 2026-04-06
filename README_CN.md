@@ -57,8 +57,65 @@ tail -f "$(brew --prefix)/var/log/irisbrige.log"
 注意：
 
 - 实际执行文件名为 `irisbrige-edge`
-- 服务实际运行命令为 `irisbrige-edge server`
+- 服务会通过 Homebrew 安装的 wrapper 启动 `irisbrige-edge server`
 - 运行时要求 `codex` CLI 在 `PATH` 中可用
+
+### 服务环境变量
+
+`brew services` 是由 `launchd` 拉起 `irisbrige-edge` 的，它不会自动继承交互式 shell 的环境变量，例如 `.zshrc` 或 `.bashrc` 里的内容。
+
+后台服务不依赖 shell 环境继承，而是使用一个固定、可直接编辑的配置文件：
+
+```bash
+~/.config/irisbrige-edge/service.env
+```
+
+你可以直接创建并编辑这个文件，加入任意 shell 兼容的 `KEY=VALUE`：
+
+```bash
+mkdir -p ~/.config/irisbrige-edge
+cat > ~/.config/irisbrige-edge/service.env <<'EOF'
+MY_PROVIDER_API_KEY=replace-me
+MY_CUSTOM_BASE_URL=https://example.com
+IRISBRIGE_ENV_CHECK=service-ready
+EOF
+```
+
+如果你不想手动创建，service wrapper 也会在第一次启动且文件缺失时自动生成一个带注释示例的模板。
+
+wrapper 会在启动 `irisbrige-edge server` 之前加载这个文件。wrapper 也会保留 Homebrew service 的 `PATH`，所以 `codex` CLI 仍然可被找到。
+
+修改文件后需要重启服务：
+
+```bash
+brew services restart irisbrige
+```
+
+如果你想让 wrapper 帮你生成这个文件模板，可以先启动或重启一次服务：
+
+```bash
+brew services start irisbrige
+```
+
+要确认这个可编辑 env 文件已经创建或已被重新加载，可以看日志里的 wrapper 记录：
+
+```bash
+tail -n 20 "$(brew --prefix)/var/log/irisbrige.log"
+```
+
+正常情况下会看到类似下面其中一条：
+
+```text
+irisbrige-edge service: created editable env file at /Users/you/.config/irisbrige-edge/service.env
+irisbrige-edge service: loaded environment from /Users/you/.config/irisbrige-edge/service.env
+```
+
+如果要确认某个非敏感变量已经进入运行中的服务进程，可以这样检查：
+
+```bash
+PID="$(launchctl print gui/$(id -u)/homebrew.mxcl.irisbrige | awk '/pid = / {print $3; exit}')"
+ps eww -p "$PID" | grep -F 'IRISBRIGE_ENV_CHECK=service-ready'
+```
 
 <a id="linux-zh"></a>
 ## Linux
