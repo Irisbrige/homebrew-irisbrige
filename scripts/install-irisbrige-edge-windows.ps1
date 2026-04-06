@@ -84,8 +84,72 @@ function Get-LatestRelease {
   Invoke-RestMethod -Headers (New-GitHubHeaders) -Uri $uri -Method Get
 }
 
+function Get-WindowsOsArchitecture {
+  $bindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static
+
+  # Older Windows PowerShell hosts may expose RuntimeInformation without OSArchitecture.
+  try {
+    $runtimeInfoType = [System.Runtime.InteropServices.RuntimeInformation]
+  } catch {
+    $runtimeInfoType = $null
+  }
+
+  if ($runtimeInfoType) {
+    $osArchProperty = $runtimeInfoType.GetProperty("OSArchitecture", $bindingFlags)
+    if ($osArchProperty) {
+      $osArch = $osArchProperty.GetValue($null, $null)
+      if ($osArch) {
+        return $osArch.ToString()
+      }
+    }
+  }
+
+  $processorArchitecture = $null
+
+  if (Get-Command -Name Get-CimInstance -ErrorAction SilentlyContinue) {
+    try {
+      $processorArchitecture = (Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop | Select-Object -First 1).Architecture
+    } catch {
+    }
+  }
+
+  if ($null -eq $processorArchitecture -and (Get-Command -Name Get-WmiObject -ErrorAction SilentlyContinue)) {
+    try {
+      $processorArchitecture = (Get-WmiObject -Class Win32_Processor -ErrorAction Stop | Select-Object -First 1).Architecture
+    } catch {
+    }
+  }
+
+  if ($null -ne $processorArchitecture) {
+    switch ([int]$processorArchitecture) {
+      9 { return "X64" }
+      12 { return "Arm64" }
+      0 { return "X86" }
+    }
+  }
+
+  $envArchitecture = if ($env:PROCESSOR_ARCHITEW6432) {
+    $env:PROCESSOR_ARCHITEW6432
+  } elseif ($env:PROCESSOR_ARCHITECTURE) {
+    $env:PROCESSOR_ARCHITECTURE
+  } else {
+    $null
+  }
+
+  if ($envArchitecture) {
+    switch ($envArchitecture.ToUpperInvariant()) {
+      "AMD64" { return "X64" }
+      "X64" { return "X64" }
+      "ARM64" { return "Arm64" }
+      "X86" { return "X86" }
+    }
+  }
+
+  Fail "Could not determine the Windows architecture."
+}
+
 function Get-WindowsAssetArch {
-  $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+  $osArch = Get-WindowsOsArchitecture
 
   switch ($osArch) {
     "X64" { return "amd64" }

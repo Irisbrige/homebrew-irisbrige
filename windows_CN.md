@@ -228,12 +228,39 @@ $scriptUrl = "https://raw.githubusercontent.com/Irisbrige/homebrew-irisbrige/ref
 ### 2. 检测架构
 
 ```powershell
-$arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) {
-  "X64"   { "amd64" }
-  "Arm64" { "arm64" }
-  default { throw "Unsupported architecture: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)" }
+function Get-IrisbrigeWindowsArch {
+  $bindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static
+
+  try {
+    $runtimeInfoType = [System.Runtime.InteropServices.RuntimeInformation]
+  } catch {
+    $runtimeInfoType = $null
+  }
+
+  if ($runtimeInfoType) {
+    $osArchProperty = $runtimeInfoType.GetProperty("OSArchitecture", $bindingFlags)
+    if ($osArchProperty) {
+      switch ($osArchProperty.GetValue($null, $null).ToString()) {
+        "X64"   { return "amd64" }
+        "Arm64" { return "arm64" }
+      }
+    }
+  }
+
+  $hint = if ($env:PROCESSOR_ARCHITEW6432) {
+    $env:PROCESSOR_ARCHITEW6432
+  } else {
+    $env:PROCESSOR_ARCHITECTURE
+  }
+
+  switch ($hint.ToUpperInvariant()) {
+    "AMD64" { return "amd64" }
+    "ARM64" { return "arm64" }
+    default { throw "Unsupported architecture: $hint" }
+  }
 }
 
+$arch = Get-IrisbrigeWindowsArch
 $arch
 ```
 
