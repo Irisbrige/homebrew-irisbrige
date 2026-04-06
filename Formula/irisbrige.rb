@@ -1,15 +1,19 @@
 class Irisbrige < Formula
   desc "Local macOS relay for iOS and Codex App Server RPC"
   homepage "https://github.com/Irisbrige/homebrew-irisbrige"
-  version "0.9.0"
+  version "0.11.0"
 
   if Hardware::CPU.arm?
-    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.9.0/irisbrige-edge_0.9.0_darwin_arm64.tar.gz"
-    sha256 "1c0408aa298081e34f5294b3fea0dbf28ed43061563956865cf7ba2158f1130e"
+    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.11.0/irisbrige-edge_0.11.0_darwin_arm64.tar.gz"
+    sha256 "3e3bb2b62adaa25cf9d30192dfd1126fc26206507573399f6fb27e680b06fab6"
   else
-    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.9.0/irisbrige-edge_0.9.0_darwin_amd64.tar.gz"
-    sha256 "ec6570ac113ced49a94d9b81731277cd073cbf8ec14e33e7070060a7d6d1867e"
+    url "https://github.com/Irisbrige/homebrew-irisbrige/releases/download/v0.11.0/irisbrige-edge_0.11.0_darwin_amd64.tar.gz"
+    sha256 "9d9f844b2d7bba523461b67439fd298f41269d8ac1336f3f91439c6ddcd38888"
   end
+
+
+
+
 
   def install
     bin.install "irisbrige-edge"
